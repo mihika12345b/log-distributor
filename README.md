@@ -21,11 +21,11 @@ python3 tests/demo_throughput.py
 ```
 
 Expected results:
-- ✅ All containers running
-- ✅ Distributor healthy with 4 analyzers
-- ✅ Weight distribution: ~40%, ~30%, ~20%, ~10%
-- ✅ Failover handling works automatically
-- ✅ Throughput: 500-800 packets/sec, 95%+ success rate
+- All containers running
+- Distributor healthy with 4 analyzers
+- Weight distribution: ~40%, ~30%, ~20%, ~10%
+- Failover handling works automatically
+- Throughput: 500-800 packets/sec, 95%+ success rate
 
 ## Architecture Overview
 
