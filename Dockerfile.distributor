@@ -1,0 +1,37 @@
+# Dockerfile for the Log Distributor service
+#
+# This builds a container that runs the FastAPI distributor server.
+# It includes all dependencies and sets up the proper environment.
+
+# Use official Python runtime as base
+# Python 3.11 is used for better asyncio performance
+FROM python:3.11-slim
+
+# Set working directory inside container
+WORKDIR /app
+
+# Install system dependencies including curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first (for better Docker layer caching)
+# If requirements don't change, this layer is reused
+COPY requirements.txt .
+
+# Install Python dependencies
+# --no-cache-dir reduces image size
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy distributor code
+COPY distributor/ ./distributor/
+
+# Set Python path so imports work correctly
+ENV PYTHONPATH=/app
+
+# Expose port 8000 (FastAPI default)
+EXPOSE 8000
+
+# Run the distributor
+# Using uvicorn directly for better control
+CMD ["uvicorn", "distributor.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,128 @@
+# Docker Compose configuration for Logs Distributor demo
+#
+# This sets up:
+# - 1 distributor service (port 8000)
+# - 4 analyzer services (ports 8001-8004) with different weights
+#
+# Network: All services are on the same network so they can communicate
+# by service name (e.g., http://analyzer-1:8001)
+
+services:
+  # ===== LOG DISTRIBUTOR =====
+  # The main service that receives packets and distributes them
+  distributor:
+    build:
+      context: .
+      dockerfile: Dockerfile.distributor
+    container_name: logs-distributor
+    ports:
+      # Expose to host so we can send requests from outside Docker
+      - "8000:8000"
+    networks:
+      - logs-network
+    depends_on:
+      # Wait for analyzers to be ready (though health checks handle this too)
+      - analyzer-1
+      - analyzer-2
+      - analyzer-3
+      - analyzer-4
+    environment:
+      # Can add configuration via env vars if needed
+      - PYTHONUNBUFFERED=1  # See logs immediately
+    healthcheck:
+      # Docker health check for the distributor
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ===== ANALYZER 1 (Weight: 0.4 = 40%) =====
+  analyzer-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.analyzer
+    container_name: analyzer-1
+    ports:
+      - "8001:8001"
+    networks:
+      - logs-network
+    environment:
+      - ANALYZER_NAME=analyzer-1
+      - ANALYZER_PORT=8001
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ===== ANALYZER 2 (Weight: 0.3 = 30%) =====
+  analyzer-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.analyzer
+    container_name: analyzer-2
+    ports:
+      - "8002:8002"
+    networks:
+      - logs-network
+    environment:
+      - ANALYZER_NAME=analyzer-2
+      - ANALYZER_PORT=8002
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ===== ANALYZER 3 (Weight: 0.2 = 20%) =====
+  analyzer-3:
+    build:
+      context: .
+      dockerfile: Dockerfile.analyzer
+    container_name: analyzer-3
+    ports:
+      - "8003:8003"
+    networks:
+      - logs-network
+    environment:
+      - ANALYZER_NAME=analyzer-3
+      - ANALYZER_PORT=8003
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ===== ANALYZER 4 (Weight: 0.1 = 10%) =====
+  analyzer-4:
+    build:
+      context: .
+      dockerfile: Dockerfile.analyzer
+    container_name: analyzer-4
+    ports:
+      - "8004:8004"
+    networks:
+      - logs-network
+    environment:
+      - ANALYZER_NAME=analyzer-4
+      - ANALYZER_PORT=8004
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+# ===== NETWORK =====
+# Shared network so all services can communicate
+networks:
+  logs-network:
+    driver: bridge

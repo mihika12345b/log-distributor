@@ -1,0 +1,14 @@
+# FastAPI - Modern async web framework
+fastapi==0.104.1
+
+# Uvicorn - ASGI server for FastAPI
+uvicorn[standard]==0.24.0
+
+# Pydantic - Data validation and settings management
+pydantic==2.5.0
+
+# HTTPX - Async HTTP client for calling analyzers
+httpx==0.25.1
+
+# Locust - Load testing framework
+locust==2.17.0

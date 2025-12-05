@@ -1,0 +1,34 @@
+# Dockerfile for the Analyzer services
+#
+# This builds a container for the mock analyzer services.
+# We'll run 4 instances of this with different configurations.
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies including curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy both analyzer and distributor code
+# (analyzer imports models from distributor)
+COPY analyzer/ ./analyzer/
+COPY distributor/ ./distributor/
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Port will be set via environment variable per instance
+EXPOSE 8001 8002 8003 8004
+
+# Run the analyzer
+# Port and name are configured via environment variables in docker-compose
+CMD ["python", "analyzer/analyzer.py"]
